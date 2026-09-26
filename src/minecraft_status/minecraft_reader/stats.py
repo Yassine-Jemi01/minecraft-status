@@ -72,9 +72,15 @@ def get_playtime_seconds(stats_file: Path) -> int:
 
 
 def format_playtime(seconds: int) -> str:
-    hours = seconds // 3600
-    minutes = (seconds % 3600) // 60
-    return f"{hours}h {minutes}m" if hours else f"{minutes}m"
+    days, remainder = divmod(max(0, seconds), 86400)
+    hours, remainder = divmod(remainder, 3600)
+    minutes = remainder // 60
+
+    if days:
+        return f"{days}d {hours}h {minutes}m"
+    if hours:
+        return f"{hours}h {minutes}m"
+    return f"{minutes}m"
 
 
 def _format_legacy_achievement_name(key: str) -> str:
