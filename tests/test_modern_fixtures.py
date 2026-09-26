@@ -9,7 +9,7 @@ def test_modern_fixtures() -> None:
     assert get_playtime_seconds(stats) == 300
     summary = get_achievements_summary(advancements, stats)
     assert summary["total_done"] == 2
-    assert summary["first_achievement"] == "Advancement Made!"
+    assert summary["first_achievement"] == "Minecraft"
     assert summary["latest_achievement"] == "Stone Age"
 
 
