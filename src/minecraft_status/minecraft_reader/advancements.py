@@ -4,6 +4,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
+from .player_data import get_singleplayer_uuid
 from .stats import get_legacy_achievements
 
 
@@ -11,9 +12,9 @@ def get_matching_advancements_file(
     world_dir: Path,
     stats_file: Path | None,
 ) -> Path | None:
-    if stats_file is None:
+    uuid = stats_file.stem if stats_file is not None else get_singleplayer_uuid(world_dir)
+    if not uuid:
         return None
-    uuid = stats_file.stem
     modern = world_dir / "players/advancements" / f"{uuid}.json"
     if modern.exists():
         return modern
@@ -67,11 +68,15 @@ def _parse_modern(path: Path) -> dict:
     if not isinstance(data, dict):
         return result
     completed = []
+    total_done = 0
+
     for advancement_id, value in data.items():
         if advancement_id == "DataVersion":
             continue
         if not isinstance(value, dict) or not value.get("done"):
             continue
+
+        total_done += 1
         timestamps = []
         criteria = value.get("criteria")
         if not isinstance(criteria, dict):
@@ -83,7 +88,7 @@ def _parse_modern(path: Path) -> dict:
                 timestamps.append(parsed)
         if timestamps:
             completed.append((max(timestamps), _format_name(advancement_id)))
-    result["total_done"] = len(completed)
+    result["total_done"] = total_done
     if completed:
         completed.sort(key=lambda item: item[0])
         result["first_achievement"] = completed[0][1]
