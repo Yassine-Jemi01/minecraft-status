@@ -113,10 +113,6 @@ def _details(data: dict, user_config: dict) -> str:
     if user_config.get("show_total_playtime", True):
         details = f"{details} • {format_playtime(data['playtime_seconds'])}"
 
-    total = int(data["achievements"].get("total_done") or 0)
-    if total:
-        details = f"{details} • {total} achievements"
-
     return details[:128]
 
 
@@ -130,9 +126,6 @@ def _state(data: dict, user_config: dict) -> str:
         if user_config.get("show_biome", True) and data["biome"]:
             parts.append(format_biome(data["biome"]))
 
-        if user_config.get("show_coordinates", True):
-            parts.append(format_coordinates(player))
-
     world_day = data.get("world_day")
     if world_day is not None:
         parts.append(f"Day {world_day}")
@@ -145,7 +138,7 @@ def _large_text(data: dict, user_config: dict) -> str:
     player = data["player_data"]
     if user_config.get("show_coordinates", True) and player is not None:
         return f"Coordinates: {format_coordinates(player)}"
-    return str(user_config.get("large_image_text", config.LARGE_IMAGE_TEXT))
+    return str(user_config.get("large_image_text", config.LARGE_IMAGE_TEXT))[:128]
 
 
 def _small_text(data: dict, user_config: dict) -> str:
@@ -156,11 +149,11 @@ def _small_text(data: dict, user_config: dict) -> str:
         if latest:
             text = f"Latest: {latest}"
             if total:
-                text = f"{text} • {total} total"
+                text = f"{text} • {total} advancements"
             return text[:128]
 
         if total:
-            return f"Achievements: {total}"
+            return f"Advancements: {total}"
 
     return str(user_config.get("small_image_text", config.SMALL_IMAGE_TEXT))[:128]
 
