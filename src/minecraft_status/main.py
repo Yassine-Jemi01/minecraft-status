@@ -10,8 +10,13 @@ from .minecraft_reader.advancements import get_achievements_summary, get_matchin
 from .minecraft_reader.biome import format_biome, get_biome
 from .minecraft_reader.discord_presence import DiscordPresence, validate_client_id
 from .minecraft_reader.locator import find_active_world
-from .minecraft_reader.player_data import format_coordinates, format_dimension, get_player_data
-from .minecraft_reader.stats import get_latest_stats_file
+from .minecraft_reader.player_data import (
+    format_coordinates,
+    format_dimension,
+    get_player_data,
+    get_world_day,
+)
+from .minecraft_reader.stats import format_playtime, get_latest_stats_file, get_playtime_seconds
 from .process_manager import clear_logs, follow_logs, get_running_pid, read_logs, restart_background, start_background, stop_background
 from .secure_store import config_file_is_encrypted, get_config_dir, redact_config
 from .user_config import get_client_id, load_user_config, set_client_id, validate_client_id_format
@@ -70,12 +75,20 @@ def change_client_id() -> None:
 def build_presence_data(world):
     stats_file = get_latest_stats_file(world)
     achievements = {"total_done": 0, "first_achievement": None, "latest_achievement": None}
+    playtime_seconds = 0
+
     if stats_file is not None:
+        try:
+            playtime_seconds = get_playtime_seconds(stats_file)
+        except (OSError, ValueError, TypeError):
+            pass
+
         adv_file = get_matching_advancements_file(world, stats_file)
         try:
             achievements = get_achievements_summary(adv_file, stats_file)
         except (OSError, ValueError, TypeError):
             pass
+
     player_data = get_player_data(world)
     biome = None
     if player_data is not None:
@@ -83,21 +96,49 @@ def build_presence_data(world):
             biome = get_biome(world, player_data)
         except (OSError, ValueError, TypeError):
             pass
-    return {"world_name": world.name, "achievements": achievements, "player_data": player_data, "biome": biome}
+
+    return {
+        "world_name": world.name,
+        "achievements": achievements,
+        "playtime_seconds": playtime_seconds,
+        "world_day": get_world_day(world),
+        "player_data": player_data,
+        "biome": biome,
+    }
 
 
-def _details(data: dict) -> str:
-    return data["world_name"]
+def _details(data: dict, user_config: dict) -> str:
+    details = data["world_name"]
+
+    if user_config.get("show_total_playtime", True):
+        details = f"{details} • {format_playtime(data['playtime_seconds'])}"
+
+    total = int(data["achievements"].get("total_done") or 0)
+    if total:
+        details = f"{details} • {total} achievements"
+
+    return details[:128]
 
 
 def _state(data: dict, user_config: dict) -> str:
     parts: list[str] = []
     player = data["player_data"]
+
     if player is not None:
         parts.append(format_dimension(player))
+
         if user_config.get("show_biome", True) and data["biome"]:
             parts.append(format_biome(data["biome"]))
-    return " • ".join(parts) if parts else "Playing Minecraft"
+
+        if user_config.get("show_coordinates", True):
+            parts.append(format_coordinates(player))
+
+    world_day = data.get("world_day")
+    if world_day is not None:
+        parts.append(f"Day {world_day}")
+
+    state = " • ".join(parts) if parts else "Playing Minecraft"
+    return state[:128]
 
 
 def _large_text(data: dict, user_config: dict) -> str:
@@ -110,9 +151,18 @@ def _large_text(data: dict, user_config: dict) -> str:
 def _small_text(data: dict, user_config: dict) -> str:
     if user_config.get("show_latest_achievement", True):
         latest = data["achievements"].get("latest_achievement")
+        total = int(data["achievements"].get("total_done") or 0)
+
         if latest:
-            return f"Latest: {latest}"
-    return str(user_config.get("small_image_text", config.SMALL_IMAGE_TEXT))
+            text = f"Latest: {latest}"
+            if total:
+                text = f"{text} • {total} total"
+            return text[:128]
+
+        if total:
+            return f"Achievements: {total}"
+
+    return str(user_config.get("small_image_text", config.SMALL_IMAGE_TEXT))[:128]
 
 
 def run() -> None:
@@ -157,7 +207,7 @@ def run() -> None:
                         print(f"Minecraft session started: {world.name}", flush=True)
                     data = build_presence_data(world)
                     presence.update(
-                        details=_details(data),
+                        details=_details(data, user_config),
                         state=_state(data, user_config),
                         large_image=user_config.get("large_image", config.LARGE_IMAGE),
                         large_text=_large_text(data, user_config),
