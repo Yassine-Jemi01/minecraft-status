@@ -20,6 +20,7 @@ DEFAULT_USER_CONFIG = {
     "small_image": SMALL_IMAGE,
     "small_image_text": SMALL_IMAGE_TEXT,
     "show_session_time": SHOW_SESSION_TIME,
+    "show_total_playtime": True,
     "show_coordinates": SHOW_COORDINATES,
     "show_biome": SHOW_BIOME,
     "show_latest_achievement": SHOW_LATEST_ACHIEVEMENT,
