@@ -1,0 +1,3 @@
+-r requirements.txt
+pytest>=8
+keyring>=25

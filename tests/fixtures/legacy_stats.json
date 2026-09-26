@@ -1,0 +1,11 @@
+{
+  "stat.playOneMinute": 4000,
+  "stat.jump": 42,
+  "achievement.openInventory": 1,
+  "achievement.mineWood": 1,
+  "achievement.buildWorkBench": 1,
+  "achievement.exploreAllBiomes": {
+    "value": 1,
+    "progress": ["Plains", "Desert"]
+  }
+}

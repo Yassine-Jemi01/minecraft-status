@@ -1,0 +1,9 @@
+{
+  "stats": {
+    "minecraft:custom": {
+      "minecraft:play_time": 6000,
+      "minecraft:jump": 42
+    }
+  },
+  "DataVersion": 3700
+}

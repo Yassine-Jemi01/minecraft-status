@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Local IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Minecraft Status local runtime data
+*.enc
+*.key
+*.pid
+*.log
+
+# Local user configuration
+config.json
+config.enc
+secret.key
+
+# Coverage
+.coverage
+coverage.xml
+htmlcov/
+
+# Temporary files
+*.tmp
+*.bak
+
+# Local ZIPs / release artifacts
+minecraft-status-*.zip
