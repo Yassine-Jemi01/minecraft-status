@@ -10,9 +10,12 @@ It is designed for Windows, macOS, and Linux, and it supports background operati
 - Detects active worlds from Minecraft's `session.lock`
 - Current-session elapsed timer instead of total world playtime
 - World name as the main Presence detail
-- Dimension and biome in the Presence state
-- Coordinates shown through the large image tooltip
+- Dimension, biome, world day, and coordinates in the Presence state
+- Coordinates also available through the large image tooltip
 - Latest achievement/advancement shown through the small image tooltip when available
+- Exact vanilla advancement titles instead of guessing names from IDs
+- Legacy 1.8.x achievement titles use the real in-game English names
+- Recipe advancements are excluded from the achievement/advancement count
 - Automatic Discord reconnect after Discord closes or restarts
 - `start`, `stop`, `restart`, `status`, and `logs`
 - `setup` and `config client-id` for Client ID management without editing source files
@@ -205,6 +208,7 @@ Covered layouts include:
 - legacy `stats/<uuid>.json`
 - modern 26.1+ `players/stats/<uuid>.json`
 - legacy `achievement.*` entries
+- exact legacy 1.8.9 achievement names with a readable fallback for unknown IDs
 - 1.12+ advancement JSON files
 - modern 26.1+ `players/advancements/<uuid>.json`
 - pre-1.18 biome storage
@@ -214,7 +218,11 @@ Covered layouts include:
 
 Minecraft 26.1 introduced a major world-storage change: default dimensions moved under `dimensions/minecraft/...`, and player storage moved under `players/`. The reader explicitly handles those paths.
 
-This project tests real 26.x data through fixtures and supports older layouts by parser compatibility. Real older-version world fixtures should be added before claiming a specific older version is fully integration-tested.
+Vanilla advancement names are bundled from Minecraft 26.2 English localization, while legacy 1.8.9 achievement names are bundled from the 1.8.9 English localization. Unknown advancement IDs, including modded ones, fall back to a readable ID-derived name instead of being silently dropped.
+
+Recipe advancements such as `minecraft:recipes/...` are not counted as player advancements because they are recipe-unlock progress rather than the normal advancement tabs.
+
+This project tests real 26.x data through fixtures and parser compatibility. Real older-version world fixtures should be added before claiming a specific older version is fully integration-tested.
 
 ## Tests
 
@@ -245,7 +253,10 @@ minecraft-status/
 │       ├── process_manager.py
 │       ├── autostart_manager.py
 │       └── minecraft_reader/
+│           ├── advancement_names.py
+│           └── ...
 ├── tests/
+│   ├── test_advancement_names.py
 │   └── fixtures/
 ├── pyproject.toml
 ├── requirements.txt
