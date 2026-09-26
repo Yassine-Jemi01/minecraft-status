@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 from .stats import get_legacy_achievements
@@ -21,6 +21,30 @@ def get_matching_advancements_file(
     if legacy.exists():
         return legacy
     return None
+
+
+def _parse_timestamp(value) -> datetime | None:
+    if not isinstance(value, str):
+        return None
+
+    text = value.strip()
+    if not text:
+        return None
+
+    try:
+        parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        try:
+            parsed = datetime.strptime(text, "%Y-%m-%d %H:%M:%S %z")
+        except ValueError:
+            try:
+                parsed = datetime.strptime(text, "%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                return None
+
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed
 
 
 def _format_name(advancement_id: str) -> str:
@@ -49,11 +73,14 @@ def _parse_modern(path: Path) -> dict:
         if not isinstance(value, dict) or not value.get("done"):
             continue
         timestamps = []
-        for stamp in value.get("criteria", {}).values():
-            try:
-                timestamps.append(datetime.strptime(stamp, "%Y-%m-%d %H:%M:%S %z"))
-            except (ValueError, TypeError):
-                continue
+        criteria = value.get("criteria")
+        if not isinstance(criteria, dict):
+            criteria = {}
+
+        for stamp in criteria.values():
+            parsed = _parse_timestamp(stamp)
+            if parsed is not None:
+                timestamps.append(parsed)
         if timestamps:
             completed.append((max(timestamps), _format_name(advancement_id)))
     result["total_done"] = len(completed)
