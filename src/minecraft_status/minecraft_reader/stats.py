@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from .advancement_names import LEGACY_ACHIEVEMENT_TITLES
 from .player_data import get_singleplayer_uuid
 
 
@@ -84,6 +85,10 @@ def format_playtime(seconds: int) -> str:
 
 
 def _format_legacy_achievement_name(key: str) -> str:
+    exact = LEGACY_ACHIEVEMENT_TITLES.get(key)
+    if exact:
+        return exact
+
     name = key[len("achievement."):]
     out: list[str] = []
     word = ""
