@@ -4,6 +4,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
+from .advancement_names import VANILLA_ADVANCEMENT_TITLES
 from .player_data import get_singleplayer_uuid
 from .stats import get_legacy_achievements
 
@@ -49,6 +50,10 @@ def _parse_timestamp(value) -> datetime | None:
 
 
 def _format_name(advancement_id: str) -> str:
+    exact = VANILLA_ADVANCEMENT_TITLES.get(advancement_id)
+    if exact:
+        return exact
+
     path = advancement_id.split(":", 1)[-1]
     if "/" in path:
         category, leaf = path.split("/", 1)
@@ -58,7 +63,8 @@ def _format_name(advancement_id: str) -> str:
     def clean(value: str) -> str:
         return value.replace("_", " ").replace("-", " ").title()
 
-    return f"{clean(category)}: {clean(leaf)}" if category else clean(leaf)
+    fallback = f"{clean(category)}: {clean(leaf)}" if category else clean(leaf)
+    return fallback
 
 
 def _parse_modern(path: Path) -> dict:
