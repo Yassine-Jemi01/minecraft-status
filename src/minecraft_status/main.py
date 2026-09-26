@@ -108,36 +108,36 @@ def build_presence_data(world):
 
 
 def _details(data: dict, user_config: dict) -> str:
-    details = data["world_name"]
+    lines = [data["world_name"]]
 
     if user_config.get("show_total_playtime", True):
-        details = f"{details} • {format_playtime(data['playtime_seconds'])}"
+        lines.append(f"Playtime: {format_playtime(data['playtime_seconds'])}")
 
-    return details[:128]
+    return "\n".join(lines)[:128]
 
 
 def _state(data: dict, user_config: dict) -> str:
-    parts: list[str] = []
+    lines: list[str] = []
     player = data["player_data"]
 
     if player is not None:
-        parts.append(format_dimension(player))
+        lines.append(f"Dimension: {format_dimension(player)}")
 
         if user_config.get("show_biome", True) and data["biome"]:
-            parts.append(format_biome(data["biome"]))
+            lines.append(f"Biome: {format_biome(data['biome'])}")
 
         if user_config.get("show_coordinates", True):
-            parts.append(format_coordinates(player))
+            lines.append(f"Coordinates: {format_coordinates(player)}")
 
     world_day = data.get("world_day")
     if world_day is not None:
-        parts.append(f"Day {world_day}")
+        lines.append(f"Day: {world_day}")
 
     total = int(data["achievements"].get("total_done") or 0)
     if user_config.get("show_latest_achievement", True) and total:
-        parts.append(f"Advancements: {total}")
+        lines.append(f"Advancements: {total}")
 
-    state = " • ".join(parts) if parts else "Playing Minecraft"
+    state = "\n".join(lines) if lines else "Playing Minecraft"
     return state[:128]
 
 
