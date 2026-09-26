@@ -39,6 +39,22 @@ def _read_level_data(world_dir: Path):
         return None
 
 
+def get_world_day(world_dir: Path) -> int | None:
+    data = _read_level_data(world_dir)
+    if data is None:
+        return None
+
+    for key in ("Time", "time"):
+        value = data.get(key)
+        try:
+            ticks = int(value)
+        except (TypeError, ValueError):
+            continue
+        return max(0, ticks) // 24000
+
+    return None
+
+
 def get_singleplayer_uuid(world_dir: Path) -> str | None:
     data = _read_level_data(world_dir)
     if data is None:
