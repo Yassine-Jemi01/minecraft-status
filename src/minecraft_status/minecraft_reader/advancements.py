@@ -76,6 +76,10 @@ def _parse_modern(path: Path) -> dict:
         if not isinstance(value, dict) or not value.get("done"):
             continue
 
+        namespace, _, path = advancement_id.partition(":")
+        if namespace == "minecraft" and path.startswith("recipes/"):
+            continue
+
         total_done += 1
         timestamps = []
         criteria = value.get("criteria")
