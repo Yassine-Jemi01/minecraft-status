@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"
 
 TESTS = [
+    "tests.test_advancement_names",
     "tests.test_legacy_support",
     "tests.test_legacy_stats",
     "tests.test_modern_fixtures",
