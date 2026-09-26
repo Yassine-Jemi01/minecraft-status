@@ -1,5 +1,7 @@
 # Minecraft Status
 
+[![License: GPL v3 or later](https://img.shields.io/badge/License-GPL%20v3%20or%20later-blue.svg)](LICENSE)
+
 Minecraft Status is a cross-platform Python application that reads local Minecraft Java Edition world data and publishes a Discord Rich Presence.
 
 It is designed for Windows, macOS, and Linux, and it supports background operation, Discord reconnects, optional auto-start, encrypted local user configuration, and multiple Minecraft save formats.
