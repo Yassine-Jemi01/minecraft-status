@@ -108,43 +108,35 @@ def build_presence_data(world):
 
 
 def _details(data: dict, user_config: dict) -> str:
-    lines = [data["world_name"]]
+    details = data["world_name"]
 
     if user_config.get("show_total_playtime", True):
-        lines.append(f"Playtime: {format_playtime(data['playtime_seconds'])}")
+        details = f"{details} • {format_playtime(data['playtime_seconds'])}"
 
-    return "\n".join(lines)[:128]
+    return details[:128]
 
 
 def _state(data: dict, user_config: dict) -> str:
-    lines: list[str] = []
+    parts: list[str] = []
     player = data["player_data"]
 
     if player is not None:
-        lines.append(f"Dimension: {format_dimension(player)}")
+        parts.append(format_dimension(player))
 
         if user_config.get("show_biome", True) and data["biome"]:
-            lines.append(f"Biome: {format_biome(data['biome'])}")
-
-        if user_config.get("show_coordinates", True):
-            lines.append(f"Coordinates: {format_coordinates(player)}")
+            parts.append(format_biome(data["biome"]))
 
     world_day = data.get("world_day")
     if world_day is not None:
-        lines.append(f"Day: {world_day}")
+        parts.append(f"Day {world_day}")
 
-    total = int(data["achievements"].get("total_done") or 0)
-    if user_config.get("show_latest_achievement", True) and total:
-        lines.append(f"Advancements: {total}")
-
-    state = "\n".join(lines) if lines else "Playing Minecraft"
-    return state[:128]
+    return " • ".join(parts)[:128] if parts else "Playing Minecraft"
 
 
 def _large_text(data: dict, user_config: dict) -> str:
     player = data["player_data"]
     if user_config.get("show_coordinates", True) and player is not None:
-        return f"Coordinates: {format_coordinates(player)}"
+        return f"Coordinates: {format_coordinates(player)}"[:128]
     return str(user_config.get("large_image_text", config.LARGE_IMAGE_TEXT))[:128]
 
 
@@ -153,14 +145,12 @@ def _small_text(data: dict, user_config: dict) -> str:
         latest = data["achievements"].get("latest_achievement")
         total = int(data["achievements"].get("total_done") or 0)
 
+        if latest and total:
+            return f"Latest: {latest} • {total} advancements"[:128]
         if latest:
-            text = f"Latest: {latest}"
-            if total:
-                text = f"{text} • {total} advancements"
-            return text[:128]
-
+            return f"Latest: {latest}"[:128]
         if total:
-            return f"Advancements: {total}"
+            return f"Advancements: {total}"[:128]
 
     return str(user_config.get("small_image_text", config.SMALL_IMAGE_TEXT))[:128]
 
@@ -217,7 +207,7 @@ def run() -> None:
                     )
                     print(
                         f"World: {data['world_name']} | "
-                        f"Details: {_details(data)} | "
+                        f"Details: {_details(data, user_config)} | "
                         f"State: {_state(data, user_config)}",
                         flush=True,
                     )
