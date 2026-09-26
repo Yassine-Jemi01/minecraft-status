@@ -126,9 +126,16 @@ def _state(data: dict, user_config: dict) -> str:
         if user_config.get("show_biome", True) and data["biome"]:
             parts.append(format_biome(data["biome"]))
 
+        if user_config.get("show_coordinates", True):
+            parts.append(format_coordinates(player))
+
     world_day = data.get("world_day")
     if world_day is not None:
         parts.append(f"Day {world_day}")
+
+    total = int(data["achievements"].get("total_done") or 0)
+    if user_config.get("show_latest_achievement", True) and total:
+        parts.append(f"Advancements: {total}")
 
     state = " • ".join(parts) if parts else "Playing Minecraft"
     return state[:128]
